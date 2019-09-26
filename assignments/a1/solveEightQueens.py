@@ -104,6 +104,38 @@ class Board:
             return (betterBoard, minNumOfAttack, newRow, newCol)
         The datatype of minNumOfAttack, newRow and newCol should be int
         """
+        #get the current board's square array
+        currentBoardArray = self.squareArray
+        #get the current costboard's square array to choose a lowest-cost decision
+        costboardArray = self.getCostBoard().squareArray
+        #initialize a minimum cost
+        minCost = 10000
+        #initialize a minimum cost list to store all positions which will cause minimum cost
+        minCost_List = []
+        for x in range(len(costboardArray)):
+            for y in range(len(costboardArray[0])):
+                if costboardArray[x][y] <= minCost:
+                    minCost = costboardArray[x][y]
+                    newRow = x
+                    newCol = y
+                    #store all the positions which have the same minimum cost
+                    minCost_List.append(((newRow,newCol),minCost))
+                for i in minCost_List:
+                    if i[1] > minCost:
+                        minCost_List.remove(i)
+        #randomly select one minimum cost position of minCost_List
+        newRow, newCol = minCost_List[random.randint(0,len(minCost_List)-1)][0]
+        #set all the values of new column to 0
+        for i in currentBoardArray:
+            i[newCol] = 0
+        #set the value of new queen position to 1
+        currentBoardArray[newRow][newCol] = 1
+        #assign betterBoard to be an instance of Board class
+        #note the difference between class Board and its attribute 'squareArray'
+        betterBoard = Board(currentBoardArray)
+        minNumOfAttack = betterBoard.getNumberOfAttacks()
+
+        return (betterBoard,minNumOfAttack,newRow,newCol)
         newBoard = Board([[0 for _i in range(8)] for _j in range(8)])
         board = self.getCostBoard()
         min = 9000

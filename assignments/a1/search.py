@@ -59,24 +59,24 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s,s,w,s,w,w,s,w]
 
-def search(problem, frontier, directions, explored_set, type):
-    while frontier:
-        node = frontier.pop()
-        direct = directions.pop()
-        if problem.isGoalState(node[-1]):
-            return direct
-        if node[-1] not in explored_set:
+def search(prob, f, dirs, explored, type):
+    while f:
+        node = f.pop()
+        dir = dirs.pop()
+        if prob.isGoalState(node[-1]):
+            return dir
+        if node[-1] not in explored:
             if type == 'bfs':
-                explored_set.append(node[-1])
+                explored.append(node[-1])
             if type == 'dfs':
-                explored_set.add(node[-1])
-            for child in problem.getSuccessors(node[-1]):
+                explored.add(node[-1])
+            for child in prob.getSuccessors(node[-1]):
                 tmp1 = list(node)
                 tmp1.append(child[0])
-                frontier.push(tmp1)
-                tmp2 = list(direct)
+                f.push(tmp1)
+                tmp2 = list(dir)
                 tmp2.append(child[1])
-                directions.push(tmp2)
+                dirs.push(tmp2)
 
 def depthFirstSearch(problem):
     """
@@ -109,23 +109,23 @@ def breadthFirstSearch(problem):
     directions = util.Queue()
     frontier.push([problem.getStartState()])
     directions.push([])
-    explored_set = []
-    return search(problem, frontier, directions, explored_set,'bfs')
+    explored_list = []
+    return search(problem, frontier, directions, explored_list,'bfs')
 
-def search2(problem, heuristic, type):
+def search2(prob, h, type):
     frontier = []
     if type == 'ucs':
-        heappush(frontier, (0, [problem.getStartState()], []))
+        heappush(frontier, (0, [prob.getStartState()], []))
     if type == 'astar':
-        heappush(frontier, (heuristic(problem.getStartState(), problem), [problem.getStartState()], []))
-    explored_set = set()
+        heappush(frontier, (h(prob.getStartState(), prob), [prob.getStartState()], []))
+    explored = set()
     while frontier:
         node = heappop(frontier)
-        if (problem.isGoalState(node[1][-1])):
+        if prob.isGoalState(node[1][-1]):
             return node[2]
-        if node[1][-1] not in explored_set:
-            explored_set.add(node[1][-1])
-            for child in problem.getSuccessors(node[1][-1]):
+        if node[1][-1] not in explored:
+            explored.add(node[1][-1])
+            for child in prob.getSuccessors(node[1][-1]):
                 tmp1 = list(node[1])
                 tmp1.append(child[0])
                 tmp2 = list(node[2])
@@ -133,7 +133,7 @@ def search2(problem, heuristic, type):
                 if type == 'ucs':
                     heappush(frontier, (node[0] + child[2], tmp1, tmp2))
                 if type == 'astar':
-                    heappush(frontier, ((node[0] + child[2] - heuristic(node[1][-1], problem) + heuristic(child[0], problem)), tmp1, tmp2))
+                    heappush(frontier, ((node[0] + child[2] - h(node[1][-1], prob) + h(child[0], prob)), tmp1, tmp2))
 
 def uniformCostSearch(problem):
     "Search the node of least total cost first. "
