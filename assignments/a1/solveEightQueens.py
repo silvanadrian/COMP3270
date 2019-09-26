@@ -104,7 +104,29 @@ class Board:
             return (betterBoard, minNumOfAttack, newRow, newCol)
         The datatype of minNumOfAttack, newRow and newCol should be int
         """
-        util.raiseNotDefined()
+        newBoard = Board([[0 for _i in range(8)] for _j in range(8)])
+        board = self.getCostBoard()
+        min = 9000
+        min_list = []
+        for r in range(8):
+            for c in range(8):
+                if board.squareArray[r][c] < min:
+                    min_list = []
+                    min = board.squareArray[r][c]
+                    row = r
+                    col = c
+                    min_list += [(row, col)]
+                if board.squareArray[r][c] == min:
+                    min_list += [(r, c)]
+                if board.squareArray[r][c] == 9999:
+                    newBoard.squareArray[r][c] = 1
+        row, col = random.choice(min_list)
+        for r in range(8):
+            if newBoard.squareArray[r][col] == 1:
+                newBoard.squareArray[r][col] = 0
+        newBoard.squareArray[row][col] = 1
+        attacks = min
+        return (newBoard, attacks, row, col)
 
     def getNumberOfAttacks(self):
         """
@@ -112,7 +134,22 @@ class Board:
         This function should return the number of attacks of the current board
         The datatype of the return value should be int
         """
-        util.raiseNotDefined()
+        attacks = 0
+        pos = []
+        board = self.squareArray
+        for i in range(8):
+            for j in range(8):
+                if board[j][i] == 1:
+                    pos.append((j,i))
+        for i in range(8):
+            queen = 0
+            for j in range(i+1, 8):
+                x = pos[i]
+                y = pos[j]
+                if abs(x[0] - y[0]) == abs(x[1] - y[1]) or x[0] == y[0]:
+                    queen += 1
+            attacks += queen
+        return attacks
 
 if __name__ == "__main__":
     #Enable the following line to generate the same random numbers (useful for debugging)
