@@ -459,45 +459,12 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    walls = problem.walls
-    #a list used to store the food position
-    foodList = []
-    #reduce the unnecssary calculating time of counting the number of food
-    foodNumber = foodGrid.count()
-    #used to calculate the minimum distance
-    minDistance1 = foodGrid.height + foodGrid.width
-    #used to calcluate the maximum distance
-    maxDistance2 = -1
-    #if all dots are eaten then h is 0 which means the goal state
-    if foodNumber == 0:
-        heuristic = 0
-    else:
-        #find the closest dot '1' to current position
-        for y in range(foodGrid.height):
-            for x in range(foodGrid.width):
-                if foodGrid[x][y] == True:
-                    #a list used to store which positions have dots
-                    foodList.append((x,y))
-                    manhattan1 = abs(position[0] - x) + abs(position[1] - y)
-                    if manhattan1 < minDistance1:
-                        minDistance1 = manhattan1
-                        minDistance1_X = x
-                        minDistance1_Y = y
-        #find the closest dot '2' to the dot '1'
-        if foodNumber > 1:
-            for i in foodList:
-                if i != (minDistance1_X,minDistance1_Y):
-                    manhattan2 = abs(minDistance1_X - i[0]) + abs(minDistance1_Y - i[1])
-                    if manhattan2 > maxDistance2:
-                        maxDistance2 = manhattan2
-                        maxDistance2_X = i[0]
-                        maxDistance2_Y = i[1]
-        if foodNumber >= 1:
-            heuristic = minDistance1 + maxDistance2
-        if foodNumber == 1:
-            heuristic = minDistance1
-            #if you can calculate the minimum sum of manhattan distance involving every node, heuristic will be better
-    return heuristic
+    cost = 0
+    if len(foodGrid.asList()) != 0:
+        # I ended up using mazeDistance which was discussed on Moodle
+        # if it can be used or not, which allows for a very nice one liner
+        cost = max(mazeDistance(position,food,problem.startingGameState) for food in foodGrid.asList())
+    return cost
     # return 0
 
 class ClosestDotSearchAgent(SearchAgent):
