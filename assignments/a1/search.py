@@ -71,12 +71,12 @@ def search(prob, f, dirs, explored, type):
             if type == 'dfs':
                 explored.add(node[-1])
             for child in prob.getSuccessors(node[-1]):
-                tmp1 = list(node)
-                tmp1.append(child[0])
-                f.push(tmp1)
-                tmp2 = list(dir)
-                tmp2.append(child[1])
-                dirs.push(tmp2)
+                list1 = list(node)
+                list1.append(child[0])
+                f.push(list1)
+                list2 = list(dir)
+                list2.append(child[1])
+                dirs.push(list2)
 
 def depthFirstSearch(problem):
     """
@@ -112,33 +112,36 @@ def breadthFirstSearch(problem):
     explored_list = []
     return search(problem, frontier, directions, explored_list,'bfs')
 
-def search2(prob, h, type):
+def search2(prob,explored, h, type):
     frontier = []
     if type == 'ucs':
         heappush(frontier, (0, [prob.getStartState()], []))
     if type == 'astar':
         heappush(frontier, (h(prob.getStartState(), prob), [prob.getStartState()], []))
-    explored = set()
     while frontier:
         node = heappop(frontier)
         if prob.isGoalState(node[1][-1]):
             return node[2]
         if node[1][-1] not in explored:
-            explored.add(node[1][-1])
+            if type == 'ucs':
+                explored.add(node[1][-1])
+            if type == 'astar':
+                explored.append(node[1][-1])
             for child in prob.getSuccessors(node[1][-1]):
-                tmp1 = list(node[1])
-                tmp1.append(child[0])
-                tmp2 = list(node[2])
-                tmp2.append(child[1])
+                list1 = list(node[1])
+                list1.append(child[0])
+                list2 = list(node[2])
+                list2.append(child[1])
                 if type == 'ucs':
-                    heappush(frontier, (node[0] + child[2], tmp1, tmp2))
+                    heappush(frontier, (node[0] + child[2], list1, list2))
                 if type == 'astar':
-                    heappush(frontier, ((node[0] + child[2] - h(node[1][-1], prob) + h(child[0], prob)), tmp1, tmp2))
+                    heappush(frontier, ((node[0] + child[2] - h(node[1][-1], prob) + h(child[0], prob)), list1, list2))
 
 def uniformCostSearch(problem):
     "Search the node of least total cost first. "
     "*** YOUR CODE HERE ***"
-    return search2(problem, 0, 'ucs')
+    explored = set()
+    return search2(problem,explored, 0, 'ucs')
 
 def nullHeuristic(state, problem=None):
     """
@@ -150,7 +153,8 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     "Search the node that has the lowest combined cost and heuristic first."
     "*** YOUR CODE HERE ***"
-    return search2(problem, heuristic, 'astar')
+    explored = []
+    return search2(problem, explored, heuristic, 'astar')
 
 # Abbreviations
 bfs = breadthFirstSearch

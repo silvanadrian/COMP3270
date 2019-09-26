@@ -136,6 +136,7 @@ class Board:
         minNumOfAttack = betterBoard.getNumberOfAttacks()
 
         return (betterBoard,minNumOfAttack,newRow,newCol)
+        """
         newBoard = Board([[0 for _i in range(8)] for _j in range(8)])
         board = self.getCostBoard()
         min = 9000
@@ -159,6 +160,7 @@ class Board:
         newBoard.squareArray[row][col] = 1
         attacks = min
         return (newBoard, attacks, row, col)
+        """
 
     def getNumberOfAttacks(self):
         """
@@ -166,22 +168,31 @@ class Board:
         This function should return the number of attacks of the current board
         The datatype of the return value should be int
         """
-        attacks = 0
-        pos = []
+
+
+        numAttacks = 0
         board = self.squareArray
-        for i in range(8):
-            for j in range(8):
-                if board[j][i] == 1:
-                    pos.append((j,i))
-        for i in range(8):
-            queen = 0
-            for j in range(i+1, 8):
-                x = pos[i]
-                y = pos[j]
-                if abs(x[0] - y[0]) == abs(x[1] - y[1]) or x[0] == y[0]:
-                    queen += 1
-            attacks += queen
-        return attacks
+        queens = []
+
+        for x in range(len(board[0])):
+            for y in range(len(board)):
+                if board[y][x] == 1:
+                    queens.append((y,x))
+
+        for i in range(len(queens)):
+
+            for j in range(i+1,len(queens)):
+
+
+                if queens[i][0] == queens[j][0]:
+                    numAttacks += 1
+
+
+                if abs(queens[i][0]-queens[j][0]) == abs(queens[i][1]-queens[j][1]):
+                    numAttacks += 1
+
+
+        return numAttacks
 
 if __name__ == "__main__":
     #Enable the following line to generate the same random numbers (useful for debugging)
