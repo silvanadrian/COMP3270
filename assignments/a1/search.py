@@ -4,6 +4,7 @@ by Pacman agents (in searchAgents.py).
 """
 
 import util
+from util import Queue, Stack
 from heapq import heappush, heappop
 
 class SearchProblem:
@@ -59,6 +60,7 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s,s,w,s,w,w,s,w]
 
+# reusage of similar code
 def search(prob, f, dirs, explored, type):
     while f:
         node = f.pop()
@@ -71,12 +73,14 @@ def search(prob, f, dirs, explored, type):
             if type == 'dfs':
                 explored.add(node[-1])
             for child in prob.getSuccessors(node[-1]):
-                list1 = list(node)
-                list1.append(child[0])
-                f.push(list1)
-                list2 = list(dir)
-                list2.append(child[1])
-                dirs.push(list2)
+
+                list1 = list(dir)
+                list1.append(child[1])
+                dirs.push(list1)
+
+                list2 = list(node)
+                list2.append(child[0])
+                f.push(list2)
 
 def depthFirstSearch(problem):
     """
@@ -93,8 +97,8 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    frontier = util.Stack()
-    directions = util.Stack()
+    frontier = Stack()
+    directions = Stack()
     frontier.push([problem.getStartState()])
     directions.push([])
     explored_set = set()
@@ -105,13 +109,14 @@ def breadthFirstSearch(problem):
     Search the shallowest nodes in the search tree first.
     """
     "*** YOUR CODE HERE ***"
-    frontier = util.Queue()
-    directions = util.Queue()
+    frontier = Queue()
+    directions = Queue()
     frontier.push([problem.getStartState()])
     directions.push([])
     explored_list = []
     return search(problem, frontier, directions, explored_list,'bfs')
 
+# Code reusage for astar and ucs
 def search2(prob,explored, h, type):
     frontier = []
     if type == 'ucs':
@@ -128,10 +133,13 @@ def search2(prob,explored, h, type):
             if type == 'astar':
                 explored.append(node[1][-1])
             for child in prob.getSuccessors(node[1][-1]):
+
                 list1 = list(node[1])
                 list1.append(child[0])
+
                 list2 = list(node[2])
                 list2.append(child[1])
+
                 if type == 'ucs':
                     heappush(frontier, (node[0] + child[2], list1, list2))
                 if type == 'astar':

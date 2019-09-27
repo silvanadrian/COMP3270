@@ -273,10 +273,7 @@ class CornersProblem(search.SearchProblem):
     def getStartState(self):
         "Returns the start state (in your state space, not the full Pacman state space)"
         "*** YOUR CODE HERE ***"
-        corners_visited = []
-        if self.startingPosition in self.corners:
-            corners_visited.append(self.startingPosition)
-        return (self.startingPosition, corners_visited)
+        return (self.startingPosition, [])
 
     def isGoalState(self, state):
         "Returns whether this search state is a goal state of the problem"
@@ -305,16 +302,17 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
-            x, y = state[0]
+            currentPosition, exploredCorners = state
+            x, y = currentPosition
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
             if not self.walls[nextx][nexty]:
                 nextState = (nextx, nexty)
-                if nextState in self.corners and nextState not in state[1]:
-                    found = state[1] + [nextState]
+                if nextState in self.corners and nextState not in exploredCorners:
+                    found = exploredCorners + [nextState]
                     successors.append(((nextState, found), action, 1))
                 else:
-                    successors.append(((nextState, state[1]), action, 1))
+                    successors.append(((nextState, exploredCorners), action, 1))
 
         self._expanded += 1
         return successors
@@ -347,27 +345,24 @@ def cornersHeuristic(state, problem):
     """
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
-
     "*** YOUR CODE HERE ***"
-    distance = 0
-    xy1 = state[0]
-    unvisited = []
-    for corner in corners:
-        if corner not in state[1]:
-            unvisited.append(corner)
-    while unvisited:
-        min = 1000
-        closest = (-1, -1)
-        for corner in unvisited:
-            xy2 = corner
-            dis = abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
-            if (dis < min):
-                min = dis
-                closest = xy2
-        distance += min
-        xy1 = closest
-        unvisited.remove(closest)
-    return distance
+    cost = 0 # initial cost
+    position, exploredCorners = state
+    unvisitedCorners = [i for i in corners if i not in exploredCorners] # inital for unvisited corners
+    # print("state", state)
+    # while we haven't visited all corners yet
+    while unvisitedCorners:
+        min = 9999 # inital value
+        temp = (0, 0)
+        for corner in unvisitedCorners:
+            distance = abs(position[0] - corner[0]) + abs(position[1] - corner[1])
+            if distance < min:
+                min = distance
+                temp = corner
+        cost += min
+        position = temp
+        unvisitedCorners.remove(temp)
+    return cost
     # return 0 # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
@@ -460,10 +455,10 @@ def foodHeuristic(state, problem):
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
     cost = 0
-    if len(foodGrid.asList()) != 0:
+    foodGridList = foodGrid.asList()
+    if len(foodGridList) != 0:
         # I ended up using mazeDistance which was discussed on Moodle
-        # if it can be used or not, which allows for a very nice one liner
-        cost = max(mazeDistance(position,food,problem.startingGameState) for food in foodGrid.asList())
+        cost = max(mazeDistance(position,food,problem.startingGameState) for food in foodGridList)
     return cost
     # return 0
 

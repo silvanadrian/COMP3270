@@ -104,63 +104,39 @@ class Board:
             return (betterBoard, minNumOfAttack, newRow, newCol)
         The datatype of minNumOfAttack, newRow and newCol should be int
         """
-        #get the current board's square array
-        currentBoardArray = self.squareArray
-        #get the current costboard's square array to choose a lowest-cost decision
-        costboardArray = self.getCostBoard().squareArray
-        #initialize a minimum cost
-        minCost = 10000
-        #initialize a minimum cost list to store all positions which will cause minimum cost
-        minCost_List = []
-        for x in range(len(costboardArray)):
-            for y in range(len(costboardArray[0])):
-                if costboardArray[x][y] <= minCost:
-                    minCost = costboardArray[x][y]
-                    newRow = x
-                    newCol = y
-                    #store all the positions which have the same minimum cost
-                    minCost_List.append(((newRow,newCol),minCost))
-                for i in minCost_List:
-                    if i[1] > minCost:
-                        minCost_List.remove(i)
-        #randomly select one minimum cost position of minCost_List
-        newRow, newCol = minCost_List[random.randint(0,len(minCost_List)-1)][0]
-        #set all the values of new column to 0
-        for i in currentBoardArray:
-            i[newCol] = 0
-        #set the value of new queen position to 1
-        currentBoardArray[newRow][newCol] = 1
-        #assign betterBoard to be an instance of Board class
-        #note the difference between class Board and its attribute 'squareArray'
-        betterBoard = Board(currentBoardArray)
-        minNumOfAttack = betterBoard.getNumberOfAttacks()
 
-        return (betterBoard,minNumOfAttack,newRow,newCol)
-        """
-        newBoard = Board([[0 for _i in range(8)] for _j in range(8)])
-        board = self.getCostBoard()
-        min = 9000
-        min_list = []
-        for r in range(8):
-            for c in range(8):
-                if board.squareArray[r][c] < min:
-                    min_list = []
-                    min = board.squareArray[r][c]
-                    row = r
-                    col = c
-                    min_list += [(row, col)]
-                if board.squareArray[r][c] == min:
-                    min_list += [(r, c)]
-                if board.squareArray[r][c] == 9999:
-                    newBoard.squareArray[r][c] = 1
-        row, col = random.choice(min_list)
-        for r in range(8):
-            if newBoard.squareArray[r][col] == 1:
-                newBoard.squareArray[r][col] = 0
-        newBoard.squareArray[row][col] = 1
-        attacks = min
-        return (newBoard, attacks, row, col)
-        """
+        board = self.squareArray
+        costboard = self.getCostBoard().squareArray
+        minList = [] # init
+        min = 99999 # initialize min
+
+        for x in range(len(costboard)):
+            for y in range(len(costboard)):
+                if costboard[x][y] <= min:
+                    min = costboard[x][y]
+
+                    newCol = y
+                    newRow = x
+
+                    minList.append(((newRow,newCol),min))
+
+                for i in minList:
+                    if i[1] > min:
+                        minList.remove(i)
+
+        newRow, newCol = random.choice(minList)[0] # random choice
+
+
+        for i in board:
+            i[newCol] = 0
+
+        board[newRow][newCol] = 1 # new queen set to 1
+
+        betterBoard = Board(board) # instance of board
+        numOfAttacks = betterBoard.getNumberOfAttacks()
+
+        # return (betterBoard, minNumOfAttack, newRow, newCol)
+        return (betterBoard,numOfAttacks,newRow,newCol)
 
     def getNumberOfAttacks(self):
         """
@@ -169,8 +145,7 @@ class Board:
         The datatype of the return value should be int
         """
 
-
-        numAttacks = 0
+        numOfAttacks = 0
         board = self.squareArray
         queens = []
 
@@ -183,16 +158,13 @@ class Board:
 
             for j in range(i+1,len(queens)):
 
-
                 if queens[i][0] == queens[j][0]:
-                    numAttacks += 1
-
+                    numOfAttacks += 1
 
                 if abs(queens[i][0]-queens[j][0]) == abs(queens[i][1]-queens[j][1]):
-                    numAttacks += 1
+                    numOfAttacks += 1
 
-
-        return numAttacks
+        return numOfAttacks
 
 if __name__ == "__main__":
     #Enable the following line to generate the same random numbers (useful for debugging)
