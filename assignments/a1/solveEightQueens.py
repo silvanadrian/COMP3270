@@ -115,28 +115,28 @@ class Board:
                 if costboard[x][y] <= min:
                     min = costboard[x][y]
 
-                    newCol = y
-                    newRow = x
+                    col = y
+                    row = x
 
-                    minList.append(((newRow,newCol),min))
+                    minList.append(((row,col),min))
 
                 for i in minList:
                     if i[1] > min:
                         minList.remove(i)
 
-        newRow, newCol = random.choice(minList)[0] # random choice
+        row, col = random.choice(minList)[0] # random choice
 
 
         for i in board:
-            i[newCol] = 0
+            i[col] = 0
 
-        board[newRow][newCol] = 1 # new queen set to 1
+        board[row][col] = 1 # new queen set to 1
 
         betterBoard = Board(board) # instance of board
         numOfAttacks = betterBoard.getNumberOfAttacks()
 
         # return (betterBoard, minNumOfAttack, newRow, newCol)
-        return (betterBoard,numOfAttacks,newRow,newCol)
+        return (betterBoard,numOfAttacks,row,col)
 
     def getNumberOfAttacks(self):
         """
@@ -149,7 +149,7 @@ class Board:
         board = self.squareArray
         queens = []
 
-        for x in range(len(board[0])):
+        for x in range(len(board)):
             for y in range(len(board)):
                 if board[y][x] == 1:
                     queens.append((y,x))
