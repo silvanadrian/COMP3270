@@ -60,27 +60,24 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s,s,w,s,w,w,s,w]
 
-# reusage of similar code
-def search(prob, f, dirs, explored, type):
-    while f:
-        node = f.pop()
-        dir = dirs.pop()
-        if prob.isGoalState(node[-1]):
-            return dir
-        if node[-1] not in explored:
-            if type == 'bfs':
-                explored.append(node[-1])
-            if type == 'dfs':
-                explored.add(node[-1])
-            for child in prob.getSuccessors(node[-1]):
+# code reusage for bfs and dfs to make it more "generalized"
+def search(problem, frontier, explored, type):
+    while not frontier.isEmpty():
+        if type == 'dfs':
+            node = frontier.pop()
+        if type == 'bfs':
+            node = frontier.pop()
+        if problem.isGoalState(node[0]):
+            return node[1]
 
-                list1 = list(dir)
-                list1.append(child[1])
-                dirs.push(list1)
+        # If the goal state is not reached, push all the successors which has not been visited yet to the stack.
+        if node[0] not in explored:
+            explored[node[0]] = True
+            for succ, act, co in problem.getSuccessors(node[0]):
+                if succ and succ not in explored:
+                    if type == 'dfs' or 'bfs':
+                        frontier.push((succ, node[1] + [act], node[2] + co))
 
-                list2 = list(node)
-                list2.append(child[0])
-                f.push(list2)
 
 def depthFirstSearch(problem):
     """
@@ -98,11 +95,10 @@ def depthFirstSearch(problem):
     """
     "*** YOUR CODE HERE ***"
     frontier = Stack()
-    directions = Stack()
-    frontier.push([problem.getStartState()])
-    directions.push([])
-    explored_set = set()
-    return search(problem, frontier, directions, explored_set,'dfs')
+    explored = {}
+    # pacman start position, actions, cost
+    frontier.push((problem.getStartState(), [], 0))
+    return search(problem, frontier, explored, 'dfs')
 
 def breadthFirstSearch(problem):
     """
@@ -110,11 +106,10 @@ def breadthFirstSearch(problem):
     """
     "*** YOUR CODE HERE ***"
     frontier = Queue()
-    directions = Queue()
-    frontier.push([problem.getStartState()])
-    directions.push([])
-    explored_list = []
-    return search(problem, frontier, directions, explored_list,'bfs')
+    explored = {}
+    # pacman start position, action, cost
+    frontier.push((problem.getStartState(), [], 0))
+    return search(problem, frontier, explored, 'bfs')
 
 # Code reusage for astar and ucs
 def search2(prob,explored, h, type):
@@ -132,18 +127,21 @@ def search2(prob,explored, h, type):
                 explored.add(node[1][-1])
             if type == 'astar':
                 explored.append(node[1][-1])
-            for child in prob.getSuccessors(node[1][-1]):
+            for succ in prob.getSuccessors(node[1][-1]):
+                # print(succ[1])
+                # print(succ[0])
+                #print(node)
 
                 list1 = list(node[1])
-                list1.append(child[0])
+                list1.append(succ[0])
 
                 list2 = list(node[2])
-                list2.append(child[1])
+                list2.append(succ[1])
 
                 if type == 'ucs':
-                    heappush(frontier, (node[0] + child[2], list1, list2))
+                    heappush(frontier, (node[0] + succ[2], list1, list2))
                 if type == 'astar':
-                    heappush(frontier, ((node[0] + child[2] - h(node[1][-1], prob) + h(child[0], prob)), list1, list2))
+                    heappush(frontier, ((node[0] + succ[2] - h(node[1][-1], prob) + h(succ[0], prob)), list1, list2))
 
 def uniformCostSearch(problem):
     "Search the node of least total cost first. "
