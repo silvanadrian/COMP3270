@@ -65,47 +65,52 @@ class ReflexAgent(Agent):
         #  A capable reflex agent will have to consider both food locations and ghost locations to perform well.
         # return successorGameState.getScore()
         capsules = currentGameState.getCapsules()
-        food_list = newFood.asList() # get food as list to easier iterate
+        prevFoodList = prevFood.asList()
+        score=0.0
+        distThreshold = 3 # when distance between Pacman and Ghost has some threshold reached
 
-        capsule_score = 300
-        food_score = 100
-        stop_direction = -90
+        # Scores I set as Base scores by playing around with them I found those values work ok
+        scores = {
+            "scaredGhost" : 3000,
+            "ghost" : 300,
+            "capsule" : 200,
+            "food" : 100
+        }
 
-        # inital score
-        score = 0
+        # handle Capsules
+        for capsule in capsules:
+            distance=manhattanDistance(capsule,newPos)
+            if distance == 0:
+                # if there is a capsule take it
+                score += scores["capsule"]
+            else:
+                # make it dependent on distance and since
+                # capsule give more points then food, try to get more capsules
+                score+=10.0/distance
 
-        # If Successor is Win state give highest score
-        if successorGameState.isWin():
-            return 999
+        # handle Food
+        for food in prevFoodList:
+            distance=manhattanDistance(food,newPos)
+            if distance == 0:
+                # nearby food give a higher score
+                score += scores["food"]
+            else:
+                # give score dependent on distance
+                score += 1.0/(distance**2)
 
-        # if there is a capsule in successor get it to get more points and make sure pacman eats it
-        if newPos in capsules:
-            score += capsule_score
+        # handle ghosts (can be more then one, even as I see it in the tests only single Ghost is used)
+        # use the distance from Pacman to ghost as indicator for score and if ghost is scared (eatable)
+        for ghost in newGhostStates:
+            distance=manhattanDistance(newPos, ghost.getPosition())
+            if distance <= distThreshold:
+                if ghost.scaredTimer > 0:
+                    # ghost is scared try to eat it
+                    score += scores["scaredGhost"]
+                else:
+                    #stay away from not scared ghosts
+                    score -= scores["ghost"]
 
-        close_food = 999 # placeholder until nearest food has been found
-        for food_pos in food_list:
-            food_dist = manhattanDistance(food_pos, newPos)
-            if food_dist < close_food:
-                close_food = food_dist
-
-        ghost_distances = []
-        for ghost_position in currentGameState.getGhostPositions(): # trying to make it more general for more ghosts
-            dist_to_ghost = manhattanDistance(ghost_position, newPos)
-            ghost_distances.append(dist_to_ghost)
-
-        score = max(ghost_distances) + successorGameState.getScore() # technically only one single ghost in tests
-        # also with 2 ghosts end up very badly, could definitely be improved but for the sake of time postponed
-
-        # go where more food is
-        if currentGameState.getNumFood() > successorGameState.getNumFood():
-            score += food_score
-
-        # don't go into Stop direction
-        if action == Directions.STOP:
-            score += stop_direction
-
-        score -= 5 * close_food
-
+        # works quite well even with 2 ghosts but pacman of course still dies quite often
         return score
         
 
