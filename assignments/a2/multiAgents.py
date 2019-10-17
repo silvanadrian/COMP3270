@@ -66,7 +66,7 @@ class ReflexAgent(Agent):
         # return successorGameState.getScore()
         capsules = currentGameState.getCapsules()
         prevFoodList = prevFood.asList()
-        score = 0.0
+        score = currentGameState.getScore()
         distThreshold = 3  # when distance between Pacman and Ghost has some threshold reached
 
         # Scores I set as Base scores by playing around with them I found those values work ok
@@ -74,13 +74,18 @@ class ReflexAgent(Agent):
             "scaredGhost": 3000,
             "ghost": 300,
             "capsule": 200,
-            "food": 100
+            "food": 100,
+            "stop": 80
         }
+
+        # Don't do moves into wrong directions
+        if action == Directions.STOP:
+            score -= scores["stop"]
 
         # handle Capsules
         for capsule in capsules:
             distance = manhattanDistance(capsule, newPos)
-            if distance == 0:
+            if distance < 1:
                 # if there is a capsule take it
                 score += scores["capsule"]
             else:
@@ -91,7 +96,7 @@ class ReflexAgent(Agent):
         # handle Food
         for food in prevFoodList:
             distance = manhattanDistance(food, newPos)
-            if distance == 0:
+            if distance < 1:
                 # nearby food give a higher score
                 score += scores["food"]
             else:
@@ -104,7 +109,7 @@ class ReflexAgent(Agent):
             distance = manhattanDistance(newPos, ghost.getPosition())
             if distance <= distThreshold:
                 if ghost.scaredTimer > 0:
-                    # ghost is scared try to eat it
+                    # ghost give high score for that
                     score += scores["scaredGhost"]
                 else:
                     # stay away from not scared ghosts
@@ -173,7 +178,54 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        # get either min or max action back
+        cost, action = self.minimax(gameState, 0, self.depth)
+
+        return action
+
+    def minMaxValue(self, state, agentIndex, depth,max):
+        actions = state.getLegalActions(agentIndex)
+        tempAction = Directions.STOP
+        if max:
+            # set - big value, compare and set new max for all possible  actions
+            tempCost = -9999
+        else:
+            # set + big value compare and set new min for all possible actions
+            tempCost = 9999
+        for action in actions:
+            cost = self.minimax(state.generateSuccessor(agentIndex, action), agentIndex + 1, depth)[0]
+            if max:
+                # if max take max
+                if cost > tempCost:
+                    tempCost = cost
+                    tempAction = action
+            else:
+                # else = min, take min
+                if cost < tempCost:
+                    tempCost = cost
+                    tempAction = action
+
+        # return tuple (cost, action)
+        return tempCost, tempAction
+
+    def minimax(self, gameState, agentIndex, depth):
+
+        numOfAgents = gameState.getNumAgents()
+        agentIndex %=  numOfAgents
+
+        if gameState.isWin() or gameState.isLose() or depth == 0:
+            # Stop condition
+            return self.evaluationFunction(gameState), Directions.STOP
+
+        # whenever we went through all agents (0,1,2) for the case of the test
+        if agentIndex == numOfAgents - 1:
+            depth -= 1
+
+        if agentIndex == 0:
+            return self.minMaxValue(gameState, agentIndex, depth, True)
+        else:
+            return self.minMaxValue(gameState, agentIndex, depth, False)
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -185,8 +237,57 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-        
+        cost, action = self.alphaBeta(gameState, 0, self.depth)
+        return action
+
+    def minMaxValuePrunning(self, state, agentIndex, depth, alpha, beta, isMax):
+        actions = state.getLegalActions(agentIndex)
+        tempAction = Directions.STOP
+        if isMax:
+            # set - big value, compare and set new max for all possible  actions
+            tempCost = -9999
+        else:
+            # set + big value compare and set new min for all possible actions
+            tempCost = 9999
+        for action in actions:
+            cost = self.alphaBeta(state.generateSuccessor(agentIndex, action), agentIndex + 1, depth, alpha, beta)[0]
+            if isMax:
+                # if max take max
+                if cost > beta:
+                    return cost, action
+                print(alpha)
+                if cost > tempCost:
+                    tempCost = cost
+                    tempAction = action
+                alpha = max(alpha, cost)
+            else:
+                # else = min, take min
+                if cost < alpha:
+                    return cost, action
+                if cost < tempCost:
+                    tempCost = cost
+                    tempAction = action
+                beta = min(beta,cost)
+
+        # return tuple (cost, action)
+        return tempCost, tempAction
+
+    def alphaBeta(self, gameState, agentIndex, depth, alpha = float("-inf"), beta = float("inf")):
+
+        if gameState.isWin() or gameState.isLose() or depth == 0:
+            return self.evaluationFunction(gameState), Directions.STOP
+
+        agentsNum = gameState.getNumAgents()
+        agentIndex %=  agentsNum
+
+        if agentIndex == agentsNum - 1:
+            depth -= 1
+
+        if agentIndex == 0:
+            return self.minMaxValuePrunning(gameState, agentIndex, depth, alpha, beta, True)
+        else:
+            return self.minMaxValuePrunning(gameState, agentIndex, depth, alpha, beta, False)
+
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -201,7 +302,48 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        cost, action = self.expectimax(gameState, 0, self.depth)
+        return action
+
+    def minMaxValue(self, state, agentIndex, depth,isMax):
+        actions = state.getLegalActions(agentIndex)
+        tempAction = Directions.STOP
+        total = 0
+        if isMax:
+            # set - big value, compare and set new max for all possible  actions
+            tempCost = -9999
+        else:
+            # set + big value compare and set new min for all possible actions
+            tempCost = 9999
+        for action in actions:
+            cost = self.expectimax(state.generateSuccessor(agentIndex, action), agentIndex + 1, depth)[0]
+            if isMax:
+                # if max take max
+                if cost > tempCost:
+                    tempCost = cost
+                    tempAction = action
+            else:
+                total += cost
+                # else = min, take min
+                tempCost = total/len(actions)
+
+        return tempCost, tempAction
+
+    def expectimax(self, gameState, agentIndex, depth):
+
+        if gameState.isWin() or gameState.isLose() or depth == 0:
+            return self.evaluationFunction(gameState), Directions.STOP
+
+        agentsNum = gameState.getNumAgents()
+        agentIndex %=  agentsNum
+        
+        if agentIndex == agentsNum - 1:
+            depth -= 1
+
+        if agentIndex == 0:
+            return self.minMaxValue(gameState, agentIndex, depth, True)
+        else:
+            return self.minMaxValue(gameState, agentIndex, depth, False)
 
 def betterEvaluationFunction(currentGameState):
     """
