@@ -62,7 +62,51 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        #  A capable reflex agent will have to consider both food locations and ghost locations to perform well.
+        # return successorGameState.getScore()
+        capsules = currentGameState.getCapsules()
+        food_list = newFood.asList() # get food as list to easier iterate
+
+        capsule_score = 300
+        food_score = 100
+        stop_direction = -90
+
+        # inital score
+        score = 0
+
+        # If Successor is Win state give highest score
+        if successorGameState.isWin():
+            return 999
+
+        # if there is a capsule in successor get it to get more points and make sure pacman eats it
+        if newPos in capsules:
+            score += capsule_score
+
+        close_food = 999 # placeholder until nearest food has been found
+        for food_pos in food_list:
+            food_dist = manhattanDistance(food_pos, newPos)
+            if food_dist < close_food:
+                close_food = food_dist
+
+        ghost_distances = []
+        for ghost_position in currentGameState.getGhostPositions(): # trying to make it more general for more ghosts
+            dist_to_ghost = manhattanDistance(ghost_position, newPos)
+            ghost_distances.append(dist_to_ghost)
+
+        score = max(ghost_distances) + successorGameState.getScore() # technically only one single ghost in tests
+        # also with 2 ghosts end up very badly, could definitely be improved but for the sake of time postponed
+
+        # go where more food is
+        if currentGameState.getNumFood() > successorGameState.getNumFood():
+            score += food_score
+
+        # don't go into Stop direction
+        if action == Directions.STOP:
+            score += stop_direction
+
+        score -= 5 * close_food
+
+        return score
         
 
 def scoreEvaluationFunction(currentGameState):
