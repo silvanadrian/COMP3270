@@ -66,48 +66,48 @@ class ReflexAgent(Agent):
         # return successorGameState.getScore()
         capsules = currentGameState.getCapsules()
         prevFoodList = prevFood.asList()
-        score=0.0
-        distThreshold = 3 # when distance between Pacman and Ghost has some threshold reached
+        score = 0.0
+        distThreshold = 3  # when distance between Pacman and Ghost has some threshold reached
 
         # Scores I set as Base scores by playing around with them I found those values work ok
         scores = {
-            "scaredGhost" : 3000,
-            "ghost" : 300,
-            "capsule" : 200,
-            "food" : 100
+            "scaredGhost": 3000,
+            "ghost": 300,
+            "capsule": 200,
+            "food": 100
         }
 
         # handle Capsules
         for capsule in capsules:
-            distance=manhattanDistance(capsule,newPos)
+            distance = manhattanDistance(capsule, newPos)
             if distance == 0:
                 # if there is a capsule take it
                 score += scores["capsule"]
             else:
                 # make it dependent on distance and since
                 # capsule give more points then food, try to get more capsules
-                score+=10.0/distance
+                score += 10.0 / distance
 
         # handle Food
         for food in prevFoodList:
-            distance=manhattanDistance(food,newPos)
+            distance = manhattanDistance(food, newPos)
             if distance == 0:
                 # nearby food give a higher score
                 score += scores["food"]
             else:
                 # give score dependent on distance
-                score += 1.0/(distance**2)
+                score += 1.0 / (distance ** 2)
 
         # handle ghosts (can be more then one, even as I see it in the tests only single Ghost is used)
         # use the distance from Pacman to ghost as indicator for score and if ghost is scared (eatable)
         for ghost in newGhostStates:
-            distance=manhattanDistance(newPos, ghost.getPosition())
+            distance = manhattanDistance(newPos, ghost.getPosition())
             if distance <= distThreshold:
                 if ghost.scaredTimer > 0:
                     # ghost is scared try to eat it
                     score += scores["scaredGhost"]
                 else:
-                    #stay away from not scared ghosts
+                    # stay away from not scared ghosts
                     score -= scores["ghost"]
 
         # works quite well even with 2 ghosts but pacman of course still dies quite often
