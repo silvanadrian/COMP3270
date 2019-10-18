@@ -222,6 +222,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         if agentIndex == numOfAgents - 1:
             depth -= 1
 
+        # if agent is Pacman get max value otherwise min value
         if agentIndex == 0:
             return self.minMaxValue(gameState, agentIndex, depth, True)
         else:
@@ -255,7 +256,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 # if max take max
                 if cost > beta:
                     return cost, action
-                print(alpha)
                 if cost > tempCost:
                     tempCost = cost
                     tempAction = action
@@ -325,6 +325,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             else:
                 total += cost
                 # else = min, take min
+                tempAction = None
                 tempCost = total/len(actions)
 
         return tempCost, tempAction
@@ -336,7 +337,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
         agentsNum = gameState.getNumAgents()
         agentIndex %=  agentsNum
-        
+
         if agentIndex == agentsNum - 1:
             depth -= 1
 
@@ -353,7 +354,36 @@ def betterEvaluationFunction(currentGameState):
       DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    newPos = currentGameState.getPacmanPosition()
+    foods = currentGameState.getFood().asList()
+    ghosts = currentGameState.getGhostStates()
+    current_score = currentGameState.getScore()
+
+    # set initial score
+    score = 0
+
+    #get the distances to the food in perspect to the pacman, store in list
+    food_dists = []
+    for food in foods:
+        food_dists.append(manhattanDistance(newPos,food))
+
+    # get all distances to ghosts
+    ghost_dists = []
+    for ghost in ghosts:
+        ghost_dists.append(manhattanDistance(newPos, ghost.getPosition()))
+        scared = ghost.scaredTimer
+        if scared > 0:
+            score += scared
+
+    nearest_ghost = min(ghost_dists)
+    # make score dependent on distance like in reflex agent
+    food_Score = 0
+    if len(food_dists) > 0:
+        food_Score = 1.0/(min(food_dists))
+
+    score += nearest_ghost * food_Score + current_score
+
+    return score
 
 # Abbreviation
 better = betterEvaluationFunction
