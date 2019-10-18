@@ -209,24 +209,22 @@ class MinimaxAgent(MultiAgentSearchAgent):
         # return tuple (cost, action)
         return tempCost, tempAction
 
-    def minimax(self, gameState, agentIndex, depth):
+    def minimax(self, state, index, depth):
+        index = index % state.getNumAgents()
 
-        numOfAgents = gameState.getNumAgents()
-        agentIndex %=  numOfAgents
-
-        if gameState.isWin() or gameState.isLose() or depth == 0:
+        if state.isWin() or state.isLose() or depth == 0:
             # Stop condition
-            return self.evaluationFunction(gameState), Directions.STOP
+            return self.evaluationFunction(state), Directions.STOP
 
         # whenever we went through all agents (0,1,2) for the case of the test
-        if agentIndex == numOfAgents - 1:
+        if index == state.getNumAgents() - 1:
             depth -= 1
 
         # if agent is Pacman get max value otherwise min value
-        if agentIndex == 0:
-            return self.minMaxValue(gameState, agentIndex, depth, True)
+        if index % state.getNumAgents() == 0:
+            return self.minMaxValue(state, index, depth, True)
         else:
-            return self.minMaxValue(gameState, agentIndex, depth, False)
+            return self.minMaxValue(state, index, depth, False)
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -241,8 +239,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         cost, action = self.alphaBeta(gameState, 0, self.depth)
         return action
 
-    def minMaxValuePrunning(self, state, agentIndex, depth, alpha, beta, isMax):
-        actions = state.getLegalActions(agentIndex)
+    def minMaxValuePrunning(self, state, index, depth, alpha, beta, isMax):
+        actions = state.getLegalActions(index)
         tempAction = Directions.STOP
         if isMax:
             # set - big value, compare and set new max for all possible  actions
@@ -251,7 +249,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             # set + big value compare and set new min for all possible actions
             tempCost = 9999
         for action in actions:
-            cost = self.alphaBeta(state.generateSuccessor(agentIndex, action), agentIndex + 1, depth, alpha, beta)[0]
+            cost = self.alphaBeta(state.generateSuccessor(index, action), index + 1, depth, alpha, beta)[0]
             if isMax:
                 # if max take max
                 if cost > beta:
@@ -272,21 +270,20 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         # return tuple (cost, action)
         return tempCost, tempAction
 
-    def alphaBeta(self, gameState, agentIndex, depth, alpha = float("-inf"), beta = float("inf")):
+    def alphaBeta(self, state, index, depth, alpha = float("-inf"), beta = float("inf")):
 
-        if gameState.isWin() or gameState.isLose() or depth == 0:
-            return self.evaluationFunction(gameState), Directions.STOP
+        if state.isWin() or state.isLose() or depth == 0:
+            return self.evaluationFunction(state), Directions.STOP
 
-        agentsNum = gameState.getNumAgents()
-        agentIndex %=  agentsNum
+        index = index % state.getNumAgents()
 
-        if agentIndex == agentsNum - 1:
+        if index == state.getNumAgents() - 1:
             depth -= 1
 
-        if agentIndex == 0:
-            return self.minMaxValuePrunning(gameState, agentIndex, depth, alpha, beta, True)
+        if index % state.getNumAgents() == 0:
+            return self.minMaxValuePrunning(state, index, depth, alpha, beta, True)
         else:
-            return self.minMaxValuePrunning(gameState, agentIndex, depth, alpha, beta, False)
+            return self.minMaxValuePrunning(state, index, depth, alpha, beta, False)
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
@@ -325,26 +322,25 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             else:
                 total += cost
                 # else = min, take min
-                tempAction = None
+                tempAction = action
                 tempCost = total/len(actions)
 
         return tempCost, tempAction
 
-    def expectimax(self, gameState, agentIndex, depth):
+    def expectimax(self, state, index, depth):
 
-        if gameState.isWin() or gameState.isLose() or depth == 0:
-            return self.evaluationFunction(gameState), Directions.STOP
+        if state.isWin() or state.isLose() or depth == 0:
+            return self.evaluationFunction(state), Directions.STOP
 
-        agentsNum = gameState.getNumAgents()
-        agentIndex %=  agentsNum
+        index = index % state.getNumAgents()
 
-        if agentIndex == agentsNum - 1:
+        if index == state.getNumAgents() - 1:
             depth -= 1
 
-        if agentIndex == 0:
-            return self.minMaxValue(gameState, agentIndex, depth, True)
+        if index % state.getNumAgents() == 0:
+            return self.minMaxValue(state, index, depth, True)
         else:
-            return self.minMaxValue(gameState, agentIndex, depth, False)
+            return self.minMaxValue(state, index, depth, False)
 
 def betterEvaluationFunction(currentGameState):
     """
