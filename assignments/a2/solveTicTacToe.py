@@ -12,6 +12,7 @@ import sys
 import random
 import time
 from optparse import OptionParser
+import math
 
 class GameState:
     """
@@ -138,9 +139,176 @@ class TicTacToeAgent():
           You can initialize some variables here, but please do not modify the input parameters.
         """
         {}
+        self.nrOfAgents=2
+        self.depth=1
+        self.winningState = ["a", "bb", "bc", "a"]
+        self.fp = {  # only includes in-play positions (not boards with three-in-a-row)
+            "000000000": "c",
+            "100000000": "",
+            "010000000": "",
+            "000010000": "cc",
+            "110000000": "ad",
+            "101000000": "b",
+            "100010000": "b",
+            "100001000": "b",
+            "100000001": "a",
+            "010100000": "a",
+            "010010000": "b",
+            "010000010": "a",
+            "110100000": "b",
+            "110010000": "ab",
+            "110001000": "d",
+            "110000100": "a",
+            "110000010": "d",
+            "110000001": "d",
+            "101010000": "a",
+            "101000100": "ab",
+            "101000010": "a",
+            "100011000": "a",
+            "100001010": "",
+            "010110000": "ab",
+            "010101000": "b",
+            "110110000": "a",
+            "110101000": "a",
+            "110100001": "a",
+            "110011000": "b",
+            "110010100": "b",
+            "110001100": "b",
+            "110001010": "ab",
+            "110001001": "ab",
+            "110000110": "b",
+            "110000101": "b",
+            "110000011": "a",
+            "101010010": "b",
+            "101000101": "a",
+            "100011010": "b",
+            "010101010": "a",
+            "110101010": "b",
+            "110101001": "b",
+            "110011100": "a",
+            "110001110": "a",
+            "110001101": "a",
+            "110101011": "a"}
+        self.winningState= ["cc", "a", "bb", "bc"]
+
+    def transferBoard(self, board):
+        rboard = ""
+        for i in board:
+            if i:
+                rboard += "1"
+            else:
+                rboard += "0"
+        return rboard
+
+    def rotate(self,board):
+        ans = board.copy()
+        for i in range(3):
+            for j in range(3):
+                ans[j * 3 + 2 - i] = board[i * 3 + j]
+        return ans
+
+    def reflect(self,board):
+        ans = board.copy()
+        for i in range(3):
+            for j in range(3):
+                ans[i * 3 + 2 - j] = board[i * 3 + j]
+        return ans
+
+    def getFingerPrint(self, board):
+        for reflection in range(2):
+            for rotation in range(4):
+                if self.transferBoard(board) in self.fp.keys():
+                    return self.transferBoard(board)
+                board = self.rotate(board)
+            board = self.reflect(board)
+
+
+    def getFingerPrints(self, state):
+        boards=state.boards
+        f=[]
+        for board in boards:
+            fp=self.getFingerPrint(board)
+            if fp != None:
+                f.append(fp)
+            else:
+                f.append("100000000")
+        return f
+
+
+    def fpScore(self, fingerprints):
+        return [self.fp[f] for f  in fingerprints]
+
+    def multiplyFp(self,scores):
+        scores.sort()
+        ans = "".join(scores)
+        return ans
+
+    def evaluationFunction(self, state):
+
+        f1,f2,f3 = self.getFingerPrints(state) # Get fingerprints for all boards
+        #print(f1 + f2 + f3 )
+        s1,s2,s3 = self.fpScore([f1,f2,f3])# Get scores for fingerprints found on boards
+        if self.multiplyFp([s1,s2,s3]) in self.winningState:
+            return 1
+        return 0
 
     def getAction(self, gameState, gameRules):
-        util.raiseNotDefined()
+        legalActions = gameState.getLegalActions(gameRules)
+        succGameState = [gameState.generateSuccessor(action) for action in legalActions]
+
+        ans = [self.minimax(gameState, gameRules, cnt=1) for gameState in succGameState]
+        print(ans)
+        #ans=[self.evaluationFunction(state) for state in succGameState]
+        bestScore = max(ans)
+        bestIndices = [ index for index in range(len(ans)) if ans[index]==bestScore]
+        print(bestIndices)
+        chosenIndex = random.choice(bestIndices)
+
+        #pdb.set_trace()
+        return legalActions[chosenIndex]
+
+
+    def minimax(self, gameState,gameRules,cnt=0):
+        terminal, utility = self.valueState(self,gameState, gameRules , cnt)
+        print(terminal)
+        print(utility)
+        if terminal: return utility  # This Code construct makes no difference for minimax whther utility is a heuristic or real utiliyt
+        states = [gameState.generateSuccessor(action) for action in gameState.getLegalActions(gameRules)]
+        if cnt%self.nrOfAgents==0:
+            return max(self.minimax(state, gameRules, cnt + 1) for state in states)
+        else:
+            return min(self.minimax(state, gameRules, cnt + 1) for state in states)
+
+
+        # It super interesting to not, that here the EVALUATION FUNCTION DEPENDS on the turns
+        # Ifa evaluation function returns
+
+
+    def valueState(self , agent, gameState, gameRules, cnt):
+        if gameRules.isGameOver(gameState.boards):# IN terminal
+            # , the player 0 gets 0 if he is in dead test, otherwise he gets 1
+            if cnt%2==0:
+                return [True,1] # MEANS THAT AGENT 1 MADE THE MOVE, SO AGENT 0 IS DEAD
+            else: #MEANS THAT AGENT 0 MADE THE MOVE, SO AGENT0 1 IS DEAD
+                return[True,0]
+        # cnt is assumed to start from 0 , therefore the second move is 1, third 2, thus the condition following
+        if math.floor(cnt / self.nrOfAgents) >= agent.depth:
+
+            # print(cnt, " ",self.nrOfAgents," ", cnt/self.nrOfAgents)
+
+            if cnt%2==0:# AGENT 1 MADE THE MOVE, WHICH REACHED THIS STATE
+                if agent.evaluationFunction(gameState) == 0: ## IF AGENT
+                    return [True,1]
+                else:
+                    return [True,0]
+            else:
+                return [True,agent.evaluationFunction(gameState) ]
+
+
+
+        return [False, -sys.maxsize]
+
+
 
 
 class randomAgent():
