@@ -257,6 +257,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 if cost > tempCost:
                     tempCost = cost
                     tempAction = action
+                # set alpha to max between beta and cost
                 alpha = max(alpha, cost)
             else:
                 # else = min, take min
@@ -265,6 +266,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 if cost < tempCost:
                     tempCost = cost
                     tempAction = action
+                # set beta to min between beta and cost
                 beta = min(beta,cost)
 
         # return tuple (cost, action)
@@ -323,6 +325,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 total += cost
                 # else = min, take min
                 tempAction = action
+                # divide by the length of the actions
                 tempCost = total/len(actions)
 
         return tempCost, tempAction
@@ -358,6 +361,11 @@ def betterEvaluationFunction(currentGameState):
     # set initial score
     score = 0.0
 
+    # make score dependent on distance like in reflex agent
+    food_Score = 0
+    if len(food_dists) > 0:
+        food_Score = 1.0/(min(food_dists))
+
     # get the manhattanDistances to the food in perspective to the pacman (newPos)
     food_dists = []
     for food in foods:
@@ -372,10 +380,6 @@ def betterEvaluationFunction(currentGameState):
             score += scared
 
     nearest_ghost = min(ghost_dists)
-    # make score dependent on distance like in reflex agent
-    food_Score = 0
-    if len(food_dists) > 0:
-        food_Score = 1.0/(min(food_dists))
 
     score += nearest_ghost * food_Score + current_score
 
