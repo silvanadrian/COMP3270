@@ -356,7 +356,7 @@ def betterEvaluationFunction(currentGameState):
     current_score = currentGameState.getScore()
 
     # set initial score
-    score = 0
+    score = 0.0
 
     #get the distances to the food in perspect to the pacman, store in list
     food_dists = []
