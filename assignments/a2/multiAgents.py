@@ -358,12 +358,12 @@ def betterEvaluationFunction(currentGameState):
     # set initial score
     score = 0.0
 
-    #get the distances to the food in perspect to the pacman, store in list
+    # get the manhattanDistances to the food in perspective to the pacman (newPos)
     food_dists = []
     for food in foods:
         food_dists.append(manhattanDistance(newPos,food))
 
-    # get all distances to ghosts
+    # get all distances to ghosts by manhattanDistance
     ghost_dists = []
     for ghost in ghosts:
         ghost_dists.append(manhattanDistance(newPos, ghost.getPosition()))
