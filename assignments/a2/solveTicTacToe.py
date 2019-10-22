@@ -143,6 +143,8 @@ class TicTacToeAgent():
         # go though legal moves, get best move according to fingerprint (a,c,c2 etc.) like described in the video on youtube
         # but need to check the board always again all possabilities (rotate etc. to check)
         # haven't had enough of time to think of a good solution, so I skipped it.
+        actions = gameState.getLegalActions(gameRules)
+        # check the actions also with a minimax agent
         util.raiseNotDefined()
 
 
