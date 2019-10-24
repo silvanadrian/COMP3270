@@ -361,15 +361,15 @@ def betterEvaluationFunction(currentGameState):
     # set initial score
     score = 0.0
 
-    # make score dependent on distance like in reflex agent
-    food_Score = 0
-    if len(food_dists) > 0:
-        food_Score = 1.0/(min(food_dists))
-
     # get the manhattanDistances to the food in perspective to the pacman (newPos)
     food_dists = []
     for food in foods:
         food_dists.append(manhattanDistance(newPos,food))
+
+    # make score dependent on distance like in reflex agent
+    food_Score = 0
+    if len(food_dists) > 0:
+        food_Score = 1.0/(min(food_dists))
 
     # get all distances to ghosts by manhattanDistance
     ghost_dists = []
