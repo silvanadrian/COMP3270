@@ -15,7 +15,20 @@ practice = {
     'd':[(1,'b'),(4,'e')],'G':[],'b':[(1,'e'),(2,'c')],
     'e':[(3,'G')],'c':[(4,'G')]}
 practiceH = {'S':7,'a':9,'b':4,'c':2,'d':5,'e':3,'G':0}
-print('Solution path:',aStarTsa(practice, practiceH, 'S', 'G'))
+
+
+quiz1 = {
+    'S': [(3,'a'), (1,'c'), (3,'d')],
+    'a' : [(1,'e')],
+    'c' : [(1,'e')],
+    'd' : [(1,'e'), (1,'G')],
+    'e' : [(2,'f')],
+    'f' : [(1,'b'), (1,'d')],
+    'b' : [(1,'e'), (2,'G')]
+}
+quiz1H = {'S':4,'a':4,'b':2,'c':5,'d':4,'e':4,'f':2,'G':0}
+
+print('Solution path:',aStarTsa(quiz1, quiz1H, 'S', 'G'))
 
 
 
