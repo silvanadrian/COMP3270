@@ -1,4 +1,4 @@
-import mdp, util
+import util
 
 from learningAgents import ValueEstimationAgent
 
@@ -31,25 +31,31 @@ class ValueIterationAgent(ValueEstimationAgent):
 
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
-        v = 0
+        # get mdp states
         states = self.mdp.getStates()
-        #start = self.mdp.getStartState()
 
-        while v < self.iterations:
-            temp = self.values.copy()
+        # iterate through iterations
+        for i in range(self.iterations):
+            valueCopy = self.values.copy()
             for state in states:
-                new_value = None
+                # init for value
+                value = None
+                # get possible actions
                 actions = self.mdp.getPossibleActions(state)
+                #iterate through possible actions
                 for action in actions:
-                    old_value = self.computeQValueFromValues(state, action)
-                    if new_value is None or new_value < old_value:
-                        new_value = old_value
-                if new_value is None:
-                    new_value = 0
-                temp[state] = new_value
+                    # get the old computed Value
+                    computedValue = self.computeQValueFromValues(state, action)
+                    if value is None or value < computedValue:
+                        value = computedValue
+                # if values is still none set it to 0
+                if value is None:
+                    value = 0
+                valueCopy[state] = value
 
-            self.values = temp
-            v += 1
+            self.values = valueCopy
+
+
 
 
     def getValue(self, state):
@@ -66,9 +72,9 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         "*** YOUR CODE HERE ***"
         qValue = 0
-        # get transition
-        transition = self.mdp.getTransitionStatesAndProbs(state, action)
-        for nextState, probability in transition:
+        # get transition states and the probabilitess
+        transitionStates = self.mdp.getTransitionStatesAndProbs(state, action)
+        for nextState, probability in transitionStates:
             # qValue = prob * (reward + (discount * state value))
             qValue += probability * (self.mdp.getReward(state, action, nextState) + (self.discount * self.getValue(nextState)))
         return qValue
@@ -92,10 +98,13 @@ class ValueIterationAgent(ValueEstimationAgent):
 
         computedAction = None
         maxValue = None
+        # iterate actions
         for action in actions:
-            tempQValue = self.computeQValueFromValues(state, action)
-            if maxValue is None or maxValue < tempQValue:
-                maxValue = tempQValue
+            # get calculated QValue
+            calcQValue = self.computeQValueFromValues(state, action)
+            # print(calcQValue)
+            if maxValue is None or maxValue < calcQValue:
+                maxValue = calcQValue
                 computedAction = action
 
         # return computed action
