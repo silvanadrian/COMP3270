@@ -145,15 +145,21 @@ class GreedyBustersAgent(BustersAgent):
              if livingGhosts[i+1]]
         "*** YOUR CODE HERE ***"
 
-        ans = None
         distance = float('inf')
-        for i in range(0,len(livingGhostPositionDistributions)):
-            dis = livingGhostPositionDistributions[i]
-            max_pos= max(dis, key=dis.get)
+        chosen_action = None
+        for index in range(0,len(livingGhostPositionDistributions)):
+            distribution = livingGhostPositionDistributions[index]
+            # print(distribution)
+            max_position = max(distribution, key=distribution.get)
+            # print(max_position)
             for action in legal:
-                successorPosition = Actions.getSuccessor(pacmanPosition,action)
-                temp=self.distancer.getDistance(successorPosition,max_pos)
-                if temp < distance:
-                    distance=temp
-                    ans = action
-        return ans
+                successor = Actions.getSuccessor(pacmanPosition,action)
+                # print(successor)
+                temp_distance = self.distancer.getDistance(successor,max_position)
+                # print(temp_distance)
+                if temp_distance < distance:
+                    distance = temp_distance
+                    chosen_action = action
+
+        # print(chosen_action)
+        return chosen_action
